@@ -6,6 +6,27 @@ const attempts = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 10;
 const WINDOW_MS = 60_000; // 1 minute
 
+interface User {
+  username: string;
+  password: string;
+}
+
+function getUsers(): User[] {
+  // CHURCH_USERS = JSON array, e.g. [{"username":"admin","password":"admin123"}]
+  const raw = process.env.CHURCH_USERS;
+  if (raw) {
+    try {
+      return JSON.parse(raw) as User[];
+    } catch {
+      // fall through to legacy
+    }
+  }
+  // Legacy fallback: single shared password, any username
+  const legacy = process.env.CHURCH_APP_PASSWORD;
+  if (legacy) return [{ username: "admin", password: legacy }];
+  return [];
+}
+
 export async function POST(request: Request) {
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -30,12 +51,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { password } = await request.json();
-    const expected = process.env.CHURCH_APP_PASSWORD;
+    const { username, password } = await request.json();
 
-    if (!expected) {
+    const users = getUsers();
+    if (users.length === 0) {
       return NextResponse.json(
-        { ok: false, error: "CHURCH_APP_PASSWORD not configured" },
+        { ok: false, error: "ยังไม่ได้ตั้งค่าผู้ใช้งาน" },
         { status: 503 }
       );
     }
@@ -43,8 +64,11 @@ export async function POST(request: Request) {
     // Artificial delay to slow brute-force (100-300ms)
     await new Promise((r) => setTimeout(r, 150 + Math.random() * 150));
 
-    if (password === expected) {
-      // Reset counter on success
+    const matched = users.find(
+      (u) => u.username === username && u.password === password
+    );
+
+    if (matched) {
       attempts.delete(ip);
       return NextResponse.json({ ok: true });
     }

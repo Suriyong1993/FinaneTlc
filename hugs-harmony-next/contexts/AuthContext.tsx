@@ -14,7 +14,7 @@ const STORAGE_KEY = "hugs_auth_token";
 interface AuthContextType {
   authenticated: boolean;
   loading: boolean;
-  login: (password: string) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -42,13 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     document.cookie = `${STORAGE_KEY}=; path=/; max-age=0; SameSite=Lax`;
   };
 
-  const login = useCallback(async (password: string): Promise<boolean> => {
-    // Verify against env var (CHURCH_APP_PASSWORD)
+  const login = useCallback(async (username: string, password: string): Promise<boolean> => {
     try {
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
       });
       if (!res.ok) return false;
       const data = await res.json();

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,7 +24,7 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      const ok = await login(password);
+      const ok = await login(username, password);
       if (ok) {
         router.push("/");
       } else {
