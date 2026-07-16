@@ -1,0 +1,13 @@
+{
+  "name": "church-finance-app",
+  "private": true,
+  "scripts": {
+    "build": "cd hugs-harmony-next && npm install && next build",
+    "vercel-build": "cd hugs-harmony-next && npm install && next build"
+  },
+  "dependencies": {
+    "next": "^16.2.10",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  }
+}
