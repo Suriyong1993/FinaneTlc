@@ -1,5 +1,7 @@
 {
   "framework": "nextjs",
-  "rootDirectory": "hugs-harmony-next",
+  "buildCommand": "cd hugs-harmony-next && npm run build",
+  "outputDirectory": "hugs-harmony-next/.next",
+  "installCommand": "cd hugs-harmony-next && npm install",
   "regions": ["sin1"]
 }
