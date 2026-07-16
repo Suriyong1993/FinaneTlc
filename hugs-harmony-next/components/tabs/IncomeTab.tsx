@@ -79,7 +79,7 @@ export default function IncomeTab() {
     <>
       {/* Header bar */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 rule-b pb-4">
-        <h2 className="text-[11px] font-semibold text-ink-muted uppercase tracking-widest">
+        <h2 className="text-xs font-semibold text-ink-faint uppercase tracking-widest">
           ใบตรวจนับเงินแยกรายการ
         </h2>
         <div className="flex flex-wrap gap-2">
@@ -102,7 +102,7 @@ export default function IncomeTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse min-w-[900px]">
             <thead>
-              <tr className="bg-stone-800 text-white text-[10px] uppercase tracking-wider">
+              <tr className="thead-dark">
                 <th className="py-2.5 px-2 text-center w-10">#</th>
                 <th className="py-2.5 px-3 min-w-[130px]">ชื่อ</th>
                 {FUND_KEYS.map((f) => (
@@ -181,7 +181,7 @@ export default function IncomeTab() {
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
             เพิ่มแถว
           </button>
-          <span className="text-[11px] text-ink-muted">
+          <span className="meta-text">
             เงินสด: <strong className="text-positive">{formatMoney(cashTotal)}</strong> | โอน: <strong className="text-info">{formatMoney(onlineTotal)}</strong>
           </span>
         </div>

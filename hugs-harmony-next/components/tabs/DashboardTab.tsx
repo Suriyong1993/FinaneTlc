@@ -127,7 +127,7 @@ export default function DashboardTab() {
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+    <div className="tab-stack">
       {/* ── Hero: total balance ── */}
       <section aria-label="ยอดรวมทั้งสิ้น">
         <p className="dash-section-title">สรุปยอดสะสม</p>

@@ -57,7 +57,7 @@ export default function ChurchApp() {
       <div className="main-content">
         {/* Top bar */}
         <header className="topbar">
-          <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+          <div className="topbar-left">
             {/* Hamburger — mobile only */}
             <button
               type="button"

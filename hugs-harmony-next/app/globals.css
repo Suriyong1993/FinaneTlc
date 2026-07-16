@@ -958,6 +958,58 @@ body { overflow-x: clip; }
 .text-xs { font-size: 11px; }
 .font-semibold { font-weight: 600; }
 
+/* ── Layout helpers ── */
+/* Vertical stack used by DashboardTab and other full-page tab layouts */
+.tab-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* Topbar left cluster (icon + title) */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* ── Table helpers ── */
+/* Dark table header using the sidebar design token (not hardcoded stone-800) */
+.thead-dark {
+  background: var(--color-sidebar-bg);
+  color: var(--color-sidebar-text);
+}
+.thead-dark th {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-sidebar-text);
+}
+
+/* Inline text helper: secondary label (11px, muted) — replaces text-[11px] */
+.meta-text {
+  font-size: 11px;
+  color: var(--c-text-3);
+}
+
+/* Card with surface background and design-system border */
+.surface-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* Semantic color bg utilities (complement existing text-* classes) */
+.bg-positive-soft { background: var(--color-positive-bg); }
+.bg-info-soft     { background: var(--color-info-bg); }
+.bg-negative-soft { background: var(--color-negative-bg); }
+.bg-accent-soft   { background: var(--color-accent-bg); }
+.bg-surface       { background: var(--c-surface); }
+.bg-surface-2     { background: var(--c-surface-2); }
+
 /* ═══════════════════════════════════════════════════
    BUTTON SYSTEM — 8-state discipline
    States: default · hover · focus · active · disabled · loading · error · success
