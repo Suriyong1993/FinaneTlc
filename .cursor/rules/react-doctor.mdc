@@ -1,0 +1,21 @@
+---
+description: React Doctor — scan React code for security, performance, correctness, a11y, bundle-size, and architecture issues. Use after finishing a feature, fixing a bug, before committing, or on /doctor.
+globs:
+  - "**/*.tsx"
+  - "**/*.jsx"
+  - "**/*.ts"
+  - "**/*.js"
+alwaysApply: false
+---
+
+# React Doctor
+
+After making React code changes, run:
+
+    npx react-doctor@latest --verbose --scope changed
+
+Check the health score did not regress. If it dropped, fix the regressions before committing.
+
+For a full cleanup pass, run `npx react-doctor@latest --verbose` and fix by severity (errors first, then warnings).
+
+Full skill (triage playbook, rule config): see `.cursor/skills/react-doctor/SKILL.md`.

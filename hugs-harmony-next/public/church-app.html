@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบการเงินคริสตจักรชีวิตสุขสันต์กาฬสินธุ์</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', 'Inter', 'Sarabun', 'sans-serif'],
+                    },
+                    // Remap the "indigo" palette used throughout the app to an Apple-blue accent
+                    colors: {
+                        indigo: {
+                            50: '#eef5ff', 100: '#dfebff', 200: '#bcd9ff', 300: '#8ec0ff',
+                            400: '#5aa3fe', 500: '#2f86fb', 600: '#0A84FF', 700: '#0071e3',
+                            800: '#0059b8', 900: '#004794', 950: '#002c5c'
+                        },
+                    },
+                    boxShadow: {
+                        'sm': '0 1px 2px rgba(15,23,42,0.04), 0 1px 1px rgba(15,23,42,0.03)',
+                        'DEFAULT': '0 2px 8px rgba(15,23,42,0.05), 0 1px 2px rgba(15,23,42,0.04)',
+                        'md': '0 6px 20px rgba(15,23,42,0.07), 0 2px 6px rgba(15,23,42,0.04)',
+                        'lg': '0 16px 40px rgba(15,23,42,0.10), 0 4px 10px rgba(15,23,42,0.05)',
+                        'xl': '0 24px 60px rgba(15,23,42,0.14), 0 8px 16px rgba(15,23,42,0.06)',
+                    },
+                    borderRadius: {
+                        'lg': '14px', 'xl': '16px', '2xl': '20px',
+                    },
+                    transitionTimingFunction: {
+                        'apple': 'cubic-bezier(0.4, 0, 0.2, 1)',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Sarabun & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        html { -webkit-font-smoothing: antialiased; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Sarabun', sans-serif; 
+            background-color: #f5f5f7; 
+        }
+        .tab-content { display: none; }
+        .tab-content.active {
+            display: block;
+            animation: appleFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+        @keyframes appleFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Sticky, frosted-glass header for that macOS toolbar feel */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background-color: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(20px) saturate(1.6);
+            -webkit-backdrop-filter: blur(20px) saturate(1.6);
+        }
+        /* Frosted sidebar (macOS-style translucent panel) */
+        .app-sidebar {
+            background-color: rgba(15, 23, 42, 0.94);
+            backdrop-filter: blur(20px) saturate(1.6);
+            -webkit-backdrop-filter: blur(20px) saturate(1.6);
+        }
+        /* Numeric figures rendered with tabular alignment, like Apple's finance UIs */
+        .figure-num { font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+        /* Soft press feedback on any clickable control */
+        button:active, .nav-btn:active { transform: scale(0.97); }
+        button, .nav-btn { transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* Softer, rounder form controls with an Apple-style focus glow */
+        input, select, textarea { transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1); }
+        input:focus, select:focus, textarea:focus {
+            box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.15) !important;
+        }
+        /* Custom scrollbar for grid */
+        .grid-scroll::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .grid-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .grid-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        /* Toast entrance, spring-like instead of a hard bounce */
+        @keyframes appleToastIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .apple-toast { animation: appleToastIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+        /* Fade-in used by expense table wrapper */
+        .animate-fade-in {
+            animation: appleFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+
+        /* Smooth scroll for the whole main area */
+        .smooth-scroll { scroll-behavior: smooth; }
+
+        /* Sidebar nav active state: stronger border + bg for current tab */
+        .nav-btn.active-tab {
+            background-color: rgba(51, 65, 85, 0.5);
+            color: #fff;
+            border-color: rgba(71, 85, 105, 0.3);
+        }
+
+        /* Fund grid items: hover lift */
+        #fund-breakdown-grid > div {
+            transition: background 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #fund-breakdown-grid > div:hover {
+            background: #f8fafc;
+        }
+
+        /* Receipt inbox card: smooth image reveal */
+        .inbox-card { transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .inbox-card:hover { box-shadow: 0 6px 20px rgba(15,23,42,0.07); }
+
+        /* Donation row number input: remove spinner for cleaner look */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 0.6;
+        }
+        input[type="number"]:focus::-webkit-inner-spin-button,
+        input[type="number"]:focus::-webkit-outer-spin-button {
+            opacity: 1;
+        }
+
+        /* Physical banknote/coin inputs: tabular alignment */
+        .denom-input { font-variant-numeric: tabular-nums; }
+
+        /* ===== Print styles: hide chrome, show content ===== */
+        @media print {
+            .app-sidebar, .app-header, .nav-btn, button:not(.print-keep) { display: none !important; }
+            body, main { overflow: visible !important; height: auto !important; }
+            .tab-content { display: block !important; }
+            main { padding: 0 !important; }
+            .bg-white, .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+            @page { margin: 15mm; }
+        }
+
+        /* ===== Reduced motion: respect OS setting ===== */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            .tab-content.active { animation: none !important; }
+        }
+
+        /* ===== Sidebar: mobile bottom tab bar compact ===== */
+        @media (max-width: 767px) {
+            .app-sidebar .nav-btn {
+                min-width: 48px;
+                padding: 8px 6px;
+                border-radius: 10px;
+            }
+            .app-sidebar .nav-btn i { width: 18px; height: 18px; }
+        }
+
+        /* ===== Income table: cell focus stands out ===== */
+        .income-cell input:focus {
+            background: #fff !important;
+            box-shadow: inset 0 0 0 2px rgba(10, 132, 255, 0.25);
+        }
+
+        /* ===== Expense log: row entry animation ===== */
+        .expense-row {
+            animation: slideInRow 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+        @keyframes slideInRow {
+            from { opacity: 0; transform: translateX(-8px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ===== History ledger divider + text balance style ===== */
+        .history-balance { font-variant-numeric: tabular-nums; }
+
+        /* ===== Pending inbox badge pulse ===== */
+        .inbox-badge-dot {
+            width: 6px; height: 6px;
+            background: #f59e0b;
+            border-radius: 50%;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col md:flex-row text-slate-800 overflow-hidden">
+
+    <!-- Sidebar / Navigation -->
+    <nav class="app-sidebar w-full md:w-64 text-white flex flex-row md:flex-col border-b md:border-b-0 md:border-r border-white/5 shrink-0">
+        <div class="p-4 border-b border-slate-800 h-16 flex items-center justify-between md:justify-start gap-3 w-full md:w-auto">
+            <div class="flex items-center gap-2">
+                <div class="p-2 bg-indigo-600 rounded-lg text-white">
+                    <i data-lucide="church" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm leading-tight">ชีวิตสุขสันต์กาฬสินธุ์</h1>
+                    <span class="text-[10px] text-slate-400">ระบบการเงิน v2.1</span>
+                </div>
+            </div>
+            <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">พร้อมใช้งาน</span>
+        </div>
+        
+        <div class="flex md:flex-col flex-1 p-2 gap-1 overflow-x-auto md:overflow-x-visible items-center md:items-stretch">
+            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-xl transition-all font-medium text-sm text-slate-300 bg-slate-800/50 border border-slate-700/30">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 text-blue-500"></i> <span class="hidden md:block">แดชบอร์ด</span>
+            </button>
+            <button onclick="switchTab('paypers')" id="btn-paypers" class="nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-xl transition-all font-medium text-sm text-slate-400 hover:text-white hover:bg-slate-800/50">
+                <i data-lucide="receipt" class="w-4 h-4 text-indigo-400"></i> <span class="hidden md:block">แนบใบเสร็จ / รอตรวจสอบ</span>
+            </button>
+            <button onclick="switchTab('income')" id="btn-income" class="nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-xl transition-all font-medium text-sm text-slate-400 hover:text-white hover:bg-slate-800/50">
+                <i data-lucide="table-properties" class="w-4 h-4 text-emerald-500"></i> <span class="hidden md:block">บันทึกรายรับประจำสัปดาห์</span>
+            </button>
+            <button onclick="switchTab('receipts')" id="btn-receipts" class="nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-xl transition-all font-medium text-sm text-slate-400 hover:text-white hover:bg-slate-800/50">
+                <i data-lucide="file-badge-2" class="w-4 h-4 text-purple-400"></i> <span class="hidden md:block">ใบอนุโมทนา / ใบรับบริจาค</span>
+            </button>
+            <button onclick="switchTab('expense')" id="btn-expense" class="nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-xl transition-all font-medium text-sm text-slate-400 hover:text-white hover:bg-slate-800/50">
+                <i data-lucide="arrow-up-right" class="w-4 h-4 text-rose-500"></i> <span class="hidden md:block">บันทึกใบเบิกจ่ายเงิน</span>
+            </button>
+            <button onclick="switchTab('rollover')" id="btn-rollover" class="nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-xl transition-all font-medium text-sm text-slate-400 hover:text-white hover:bg-slate-800/50 border border-slate-800 hover:border-slate-700">
+                <i data-lucide="lock" class="w-4 h-4 text-amber-500"></i> <span class="hidden md:block">ปิดยอดวันอาทิตย์</span>
+            </button>
+            <button onclick="switchTab('settings')" id="btn-settings" class="nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-xl transition-all font-medium text-sm text-slate-400 hover:text-white hover:bg-slate-800/50 md:mt-auto border border-dashed border-slate-800 hover:border-slate-700">
+                <i data-lucide="settings" class="w-4 h-4 text-slate-400"></i> <span class="hidden md:block">ตั้งค่า Webhook & ข้อมูล</span>
+            </button>
+            <button onclick="switchTab('help')" id="btn-help" class="nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-3 px-4 py-2.5 rounded-xl transition-all font-medium text-sm text-slate-400 hover:text-white hover:bg-slate-800/50">
+                <i data-lucide="circle-help" class="w-4 h-4 text-slate-400"></i> <span class="hidden md:block">คู่มือ / ช่วยเหลือ</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto smooth-scroll">
+        <header class="app-header h-16 border-b border-slate-200 px-6 md:px-8 flex items-center justify-between shrink-0">
+            <h2 id="page-title" class="text-lg font-bold text-slate-800">แดชบอร์ดสรุปยอดสะสม</h2>
+            <div class="flex items-center gap-2">
+                <button id="btn-go-church-site" onclick="goToChurchWebsite()" class="hidden text-xs font-semibold bg-white text-slate-600 border border-slate-200 px-3 py-1.5 rounded-full items-center gap-1.5 hover:bg-slate-50">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i> เว็บ/เพจคริสตจักร
+                </button>
+                <span class="text-xs font-semibold bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full border border-indigo-100 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                    รอบบัญชี: สัปดาห์ที่ <strong id="current-week-num">1</strong>
+                </span>
+            </div>
+        </header>
+
+        <div class="flex-1 p-6 md:p-8 space-y-6 max-w-7xl w-full mx-auto">
+
+            <!-- DASHBOARD TAB -->
+            <div id="tab-dashboard" class="tab-content active space-y-6">
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden group hover:shadow-md transition-all">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full -mr-8 -mt-8 -z-0 transition-transform group-hover:scale-110"></div>
+                        <div class="relative z-10 flex flex-col justify-between h-full">
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">เงินสดในมือ (ในกล่องเซฟ)</p>
+                            <h3 id="dash-cash" class="text-3xl font-bold text-emerald-600 tracking-tight mt-2">0.00</h3>
+                            <div class="flex items-center gap-1 text-[10px] text-slate-500 mt-4">
+                                <i data-lucide="wallet" class="w-3.5 h-3.5 text-emerald-500"></i> ยอดที่ต้องตรวจนับจริงเมื่อสิ้นสัปดาห์
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden group hover:shadow-md transition-all">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-full -mr-8 -mt-8 -z-0 transition-transform group-hover:scale-110"></div>
+                        <div class="relative z-10 flex flex-col justify-between h-full">
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">เงินในบัญชีธนาคาร (เงินโอน)</p>
+                            <h3 id="dash-bank" class="text-3xl font-bold text-indigo-600 tracking-tight mt-2">0.00</h3>
+                            <div class="flex items-center gap-1 text-[10px] text-slate-500 mt-4">
+                                <i data-lucide="landmark" class="w-3.5 h-3.5 text-indigo-500"></i> รวมยอดถวายสแกนคิวอาร์โค้ด
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 p-6 rounded-2xl text-white relative overflow-hidden group shadow-lg transition-all">
+                        <div class="absolute bottom-0 right-0 w-32 h-32 bg-slate-800 rounded-full -mb-10 -mr-10"></div>
+                        <div class="relative z-10 flex flex-col justify-between h-full">
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">ยอดรวมสมุดบัญชีทั้งสิ้น</p>
+                            <h3 id="dash-total" class="text-3xl font-extrabold text-amber-400 tracking-tight mt-2">0.00</h3>
+                            <div class="flex items-center gap-1 text-[10px] text-slate-400 mt-4">
+                                <i data-lucide="coins" class="w-3.5 h-3.5 text-amber-500"></i> (ยอดยกมาสะสม + รายรับสัปดาห์นี้)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fund Breakdown (สรุปกองทุนแยกประเภท) -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 bg-slate-50/50">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-500"></i> สรุปกองทุนแยกประเภท (สะสมทุกสัปดาห์ + สัปดาห์นี้)
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">แยกยอดถวายตามวัตถุประสงค์ เพื่อดูว่าแต่ละกองทุนมียอดสะสมเท่าไรแล้ว</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 divide-x divide-y md:divide-y-0 divide-slate-100" id="fund-breakdown-grid">
+                        <!-- Filled by JS: renderFundBreakdown() -->
+                    </div>
+                </div>
+
+                <!-- Weekly Note (จดบันทึกประจำสัปดาห์) -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-2">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm">
+                        <i data-lucide="notebook-pen" class="w-4 h-4 text-amber-500"></i> จดบันทึกประจำสัปดาห์นี้
+                    </h3>
+                    <p class="text-xs text-slate-400">บันทึกเหตุการณ์พิเศษ มติที่ประชุม หรือหมายเหตุอื่นๆ ที่ไม่ใช่ตัวเลขเงิน — จะถูกเก็บแนบไว้กับประวัติของสัปดาห์นี้ตอนปิดยอด</p>
+                    <textarea id="weekly-note" onchange="saveWeeklyNote(this.value)" rows="3" placeholder="เช่น มีการรับสมาชิกใหม่ 2 ท่าน / เตรียมงานคริสต์มาส..." class="w-full border border-slate-300 focus:border-indigo-500 rounded-xl py-2.5 px-3 text-sm outline-none resize-none"></textarea>
+                </div>
+
+                <!-- Ledger History Logs -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="history" class="w-4 h-4 text-indigo-500"></i> ประวัติบัญชีรายสัปดาห์ (Ledger Log)
+                        </h3>
+                        <button onclick="exportHistoryCSV()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i> ส่งออกประวัติ (CSV)
+                        </button>
+                    </div>
+                    <div class="divide-y divide-slate-100 max-h-[300px] overflow-y-auto" id="history-list">
+                        <div class="p-6 text-center text-slate-400 text-sm">
+                            <i data-lucide="folder-open" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+                            ยังไม่มีบันทึกการปิดบัญชีประวัติ ระบบจะแสดงผลเมื่อคุณกดปิดยอดรายสัปดาห์
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RECEIPT ATTACH TAB (real manual entry, no fake OCR) -->
+            <div id="tab-paypers" class="tab-content space-y-6">
+                <!-- Info Banner -->
+                <div class="bg-gradient-to-r from-indigo-900 to-slate-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg">
+                    <div class="absolute right-0 top-0 opacity-10 pointer-events-none transform translate-x-12 -translate-y-6">
+                        <i data-lucide="receipt-text" class="w-64 h-64"></i>
+                    </div>
+                    <div class="relative z-10 space-y-2">
+                        <span class="bg-indigo-500 text-white font-semibold text-[10px] tracking-widest uppercase px-2.5 py-1 rounded-full">แนบไฟล์ + กรอกข้อมูลด้วยมือ</span>
+                        <h3 class="text-xl font-bold">แนบใบเสร็จ/สลิป แล้วส่งเข้าคิวรอตรวจสอบ</h3>
+                        <p class="text-slate-300 text-xs max-w-2xl">
+                            แนบรูปใบเสร็จหรือสลิปจริงจากเครื่อง กรอกรายละเอียดผู้เบิก/จำนวนเงินด้วยตนเอง แล้วกด "ส่งเข้าคิว" รายการจะรอตรวจสอบก่อนกดอนุมัติเพื่อบันทึกเข้าบัญชีจริง ระบบไม่มีการอ่านข้อมูลอัตโนมัติ (OCR) — ทุกยอดต้องตรวจสอบและกรอกเอง
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Left: Real receipt attach form -->
+                    <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                        <div class="p-4 border-b border-slate-200 bg-slate-50/50">
+                            <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                                <i data-lucide="upload-cloud" class="w-4 h-4 text-indigo-500"></i> แนบใบเสร็จใหม่
+                            </h4>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            <div>
+                                <label class="cursor-pointer flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-300 hover:border-indigo-400 rounded-xl p-4 text-center transition-colors">
+                                    <img id="receipt-preview-img" class="hidden max-h-32 rounded-lg object-contain" />
+                                    <i id="receipt-preview-icon" data-lucide="image-plus" class="w-8 h-8 text-slate-400"></i>
+                                    <span id="receipt-preview-label" class="text-xs font-semibold text-slate-500">แตะเพื่อเลือกรูปใบเสร็จ/สลิป (ไม่บังคับ)</span>
+                                    <input type="file" id="real-file-picker" accept="image/*" class="hidden" onchange="handleRealFileUpload(event)">
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">ผู้เบิกเงิน</label>
+                                <input type="text" id="rc-requester" placeholder="ชื่อผู้เบิกเงิน" class="w-full border border-slate-300 focus:border-indigo-500 rounded-lg py-2 px-3 text-sm outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">จ่ายให้ / ผู้รับเงิน</label>
+                                <input type="text" id="rc-payee" placeholder="ผู้รับเงินตามใบเสร็จ" class="w-full border border-slate-300 focus:border-indigo-500 rounded-lg py-2 px-3 text-sm outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">วัตถุประสงค์</label>
+                                <input type="text" id="rc-purpose" placeholder="เพื่อเป็นค่า..." class="w-full border border-slate-300 focus:border-indigo-500 rounded-lg py-2 px-3 text-sm outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">จำนวนเงิน (บาท)</label>
+                                    <input type="number" id="rc-amount" min="0" placeholder="0.00" class="w-full border border-slate-300 focus:border-indigo-500 rounded-lg py-2 px-3 text-sm outline-none font-semibold">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">ช่องทางที่เบิก</label>
+                                    <select id="rc-method" class="w-full border border-slate-300 focus:border-indigo-500 rounded-lg py-2 px-2 text-sm outline-none font-medium text-slate-700">
+                                        <option value="cash">💵 เงินสดในกล่อง</option>
+                                        <option value="bank">📱 โอนผ่านบัญชี</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button onclick="addToReceiptInbox()" class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold py-2.5 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2">
+                                <i data-lucide="inbox" class="w-4 h-4"></i> ส่งเข้าคิวรอตรวจสอบ
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Verification Inbox -->
+                    <div class="lg:col-span-7 flex flex-col h-[550px]">
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
+                            <div class="p-4 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-indigo-100 text-indigo-700 p-1.5 rounded-lg">
+                                        <i data-lucide="inbox" class="w-4 h-4"></i>
+                                    </span>
+                                    <div>
+                                        <h4 class="font-bold text-sm text-slate-800">กล่องคิวรอยืนยันเพื่อบันทึกบัญชี</h4>
+                                        <p class="text-[10px] text-slate-500">ตรวจสอบข้อมูลและรูปแนบให้ถูกต้อง แล้วกดยืนยันเพื่อบันทึกเข้าบัญชีจริง</p>
+                                    </div>
+                                </div>
+                                <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full" id="inbox-count">0 รายการ</span>
+                            </div>
+
+                            <!-- List of items to verify -->
+                            <div class="flex-1 overflow-y-auto p-4 space-y-4" id="ai-pending-list">
+                                <!-- Filled by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INCOME TAB (Digital Form matching S__7962643_0.jpg) -->
+            <div id="tab-income" class="tab-content space-y-6">
+                <!-- Quick AI & Manual tools header -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i data-lucide="scan-line" class="w-5 h-5 text-indigo-600"></i>
+                            ใบตรวจนับเงินแยกรายการประจำวันที่สัปดาห์ (อ้างอิง S__7962643_0.jpg)
+                        </h3>
+                        <p class="text-xs text-slate-500">กรอกรายรับถวายแยกประเภทด้วยมือ แล้วส่งออกรายงานเป็นไฟล์ Excel (CSV) ได้</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full lg:w-auto">
+                        <button onclick="exportSpreadsheetCSV()" class="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition-all shadow-md">
+                            <i data-lucide="file-spreadsheets" class="w-4 h-4"></i> ส่งออกข้อมูลเป็น Excel (.csv)
+                        </button>
+                        <button onclick="clearDonationTable()" class="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-semibold py-2 px-4 rounded-xl text-sm transition-all">
+                            <i data-lucide="trash-2" class="w-4 h-4 text-slate-500"></i> เคลียร์ตาราง
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Digital Spreadsheet Grid container -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    <div class="overflow-x-auto grid-scroll">
+                        <table class="w-full text-left text-sm border-collapse min-w-[1000px]">
+                            <thead>
+                                <tr class="bg-slate-900 text-white font-bold text-xs uppercase tracking-wider">
+                                    <th class="py-3 px-3 text-center border border-slate-800 w-12">ลำดับ</th>
+                                    <th class="py-3 px-4 border border-slate-800 min-w-[150px]">ชื่อ / รายการ</th>
+                                    <th class="py-3 px-3 text-right border border-slate-800">สิบลด</th>
+                                    <th class="py-3 px-3 text-right border border-slate-800">ค่าเช่าฯ</th>
+                                    <th class="py-3 px-3 text-right border border-slate-800">อนุสรณ์ฯ</th>
+                                    <th class="py-3 px-3 text-right border border-slate-800">พันธกิจ</th>
+                                    <th class="py-3 px-3 text-right border border-slate-800">ถวายพิเศษ</th>
+                                    <th class="py-3 px-3 text-right border border-slate-800">ที่ดิน</th>
+                                    <th class="py-3 px-3 text-right border border-slate-800">ปาร์ตี้</th>
+                                    <th class="py-3 px-3 text-center border border-slate-800 min-w-[120px]">ช่องทางรับเงิน</th>
+                                    <th class="py-3 px-4 text-right border border-slate-800 bg-slate-800 min-w-[100px]">รวม</th>
+                                    <th class="py-3 px-3 text-center border border-slate-800 w-12">ลบ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="donation-rows">
+                                <!-- Interactive rows will be appended here dynamically -->
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-slate-100 font-bold text-slate-800">
+                                    <td colspan="2" class="py-3 px-4 text-center border border-slate-200 font-extrabold bg-slate-200/50">รวมทั้งสิ้น</td>
+                                    <td id="sum-tithe" class="py-3 px-3 text-right border border-slate-200">0.00</td>
+                                    <td id="sum-rent" class="py-3 px-3 text-right border border-slate-200">0.00</td>
+                                    <td id="sum-memorial" class="py-3 px-3 text-right border border-slate-200">0.00</td>
+                                    <td id="sum-mission" class="py-3 px-3 text-right border border-slate-200">0.00</td>
+                                    <td id="sum-special" class="py-3 px-3 text-right border border-slate-200">0.00</td>
+                                    <td id="sum-land" class="py-3 px-3 text-right border border-slate-200">0.00</td>
+                                    <td id="sum-party" class="py-3 px-3 text-right border border-slate-200">0.00</td>
+                                    <td class="py-3 px-3 text-center border border-slate-200 text-xs text-slate-500">คำนวณอัตโนมัติ</td>
+                                    <td id="sum-total" class="py-3 px-4 text-right border border-slate-200 bg-slate-200 text-indigo-700 font-extrabold text-base">0.00</td>
+                                    <td class="py-3 px-3 border border-slate-200"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <button onclick="addDonationRow()" class="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold py-2 px-4 rounded-xl text-sm transition-all shadow-sm">
+                            <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มรายชื่อ / แถวใหม่
+                        </button>
+                        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                            <div class="text-right hidden sm:block">
+                                <span class="text-xs text-slate-400 block">แบ่งประเภทรับเงินสัปดาห์นี้</span>
+                                <span class="text-xs font-semibold text-slate-600">
+                                    เงินสด: <strong class="text-emerald-600" id="live-row-cash">0</strong> ฿ | 
+                                    โอน: <strong class="text-indigo-600" id="live-row-online">0</strong> ฿
+                                </span>
+                            </div>
+                            <button onclick="saveDonationToSystem()" class="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold py-2 px-6 rounded-xl text-sm transition-all shadow-md">
+                                <i data-lucide="save" class="w-4 h-4"></i> บันทึกใบสรุปรายรับ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXPENSE TAB (Matching the paper slip workflow) -->
+            <div id="tab-expense" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Expense entry form -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit space-y-4">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-1.5 pb-2 border-b">
+                            <i data-lucide="arrow-up-right" class="w-5 h-5 text-rose-500"></i> เขียนใบเบิกเงินใหม่
+                        </h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">ชื่อผู้เบิกเงิน</label>
+                                <input type="text" id="exp-requester" placeholder="ตัวอย่าง: สุภาภรณ์ จิณวงษ์" class="w-full border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg py-2 px-3 text-sm outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">จ่ายให้ / ผู้รับเงิน</label>
+                                <input type="text" id="exp-payee" placeholder="ตัวอย่าง: ปุณนา 277 / สารวิญญู" class="w-full border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg py-2 px-3 text-sm outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">วัตถุประสงค์ (เพื่อเป็นค่า)</label>
+                                <input type="text" id="exp-purpose" placeholder="ตัวอย่าง: ค่าพันธกิจในเมือง + ซ่อมแซมป้าย" class="w-full border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg py-2 px-3 text-sm outline-none transition-all">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">จำนวนเงิน (บาท)</label>
+                                    <input type="number" id="exp-amount" min="0" placeholder="0.00" class="w-full border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg py-2 px-3 text-sm outline-none transition-all font-semibold">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">ช่องทางที่เบิก</label>
+                                    <select id="exp-method" class="w-full border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg py-2 px-2 text-sm outline-none transition-all font-medium text-slate-700">
+                                        <option value="cash">💵 จ่ายจากเงินสดในกล่อง</option>
+                                        <option value="bank">📱 โอนผ่านบัญชีธนาคาร</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="addExpenseTransaction()" class="w-full bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-semibold py-2.5 rounded-xl text-sm transition-all shadow-sm">
+                            บันทึกรายการเบิกเงิน
+                        </button>
+                    </div>
+
+                    <!-- Expense table log -->
+                    <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                        <div class="p-5 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i data-lucide="receipt-text" class="w-4 h-4 text-slate-500"></i> ล็อกการเบิกจ่ายสัปดาห์นี้
+                            </h3>
+                            <span class="text-xs text-slate-400 font-medium">รายการจะตัดลดล้างยอดเงินในแดชบอร์ดทันที</span>
+                        </div>
+                        <div class="overflow-x-auto grid-scroll flex-1 animate-fade-in">
+                            <table class="w-full text-left text-sm border-collapse min-w-[600px]">
+                                <thead class="bg-slate-50 text-slate-500 font-semibold text-xs border-b border-slate-200">
+                                    <tr>
+                                        <th class="py-3 px-4">วันที่ / เวลา</th>
+                                        <th class="py-3 px-4">ผู้เบิกเงิน</th>
+                                        <th class="py-3 px-4">เพื่อเป็นค่า (วัตถุประสงค์)</th>
+                                        <th class="py-3 px-4">เบิกจาก</th>
+                                        <th class="py-3 px-4 text-right">จำนวนเงิน</th>
+                                        <th class="py-3 px-3 text-center">ลบ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expense-logs-body" class="divide-y divide-slate-100">
+                                    <!-- Log rows filled dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROLLOVER TAB (Matching the banknote calculator) -->
+            <div id="tab-rollover" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Banknote counting panel -->
+                    <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="p-5 border-b border-slate-200 bg-slate-50/50">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                <i data-lucide="calculator" class="w-4 h-4 text-indigo-500"></i> เครื่องคิดเลขนับธนบัตรและเหรียญจริง
+                            </h3>
+                        </div>
+                        <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Left Column: Banknotes -->
+                            <div class="space-y-3">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b pb-1.5">ธนบัตร (Banknotes)</h4>
+                                
+                                <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border">
+                                    <div class="w-16 text-center text-xs font-bold bg-slate-200 text-slate-800 rounded py-1">1000</div>
+                                    <input type="number" id="c-1000" min="0" oninput="sumCashReconciliation()" placeholder="จำนวนใบ" class="w-full bg-white border p-1.5 text-right text-sm rounded outline-none font-semibold denom-input">
+                                </div>
+                                <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border">
+                                    <div class="w-16 text-center text-xs font-bold bg-purple-200 text-purple-800 rounded py-1">500</div>
+                                    <input type="number" id="c-500" min="0" oninput="sumCashReconciliation()" placeholder="จำนวนใบ" class="w-full bg-white border p-1.5 text-right text-sm rounded outline-none font-semibold denom-input">
+                                </div>
+                                <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border">
+                                    <div class="w-16 text-center text-xs font-bold bg-red-200 text-red-800 rounded py-1">100</div>
+                                    <input type="number" id="c-100" min="0" oninput="sumCashReconciliation()" placeholder="จำนวนใบ" class="w-full bg-white border p-1.5 text-right text-sm rounded outline-none font-semibold denom-input">
+                                </div>
+                                <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border">
+                                    <div class="w-16 text-center text-xs font-bold bg-blue-200 text-blue-800 rounded py-1">50</div>
+                                    <input type="number" id="c-50" min="0" oninput="sumCashReconciliation()" placeholder="จำนวนใบ" class="w-full bg-white border p-1.5 text-right text-sm rounded outline-none font-semibold denom-input">
+                                </div>
+                                <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border">
+                                    <div class="w-16 text-center text-xs font-bold bg-green-200 text-green-800 rounded py-1">20</div>
+                                    <input type="number" id="c-20" min="0" oninput="sumCashReconciliation()" placeholder="จำนวนใบ" class="w-full bg-white border p-1.5 text-right text-sm rounded outline-none font-semibold denom-input">
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column: Coins -->
+                            <div class="space-y-3">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b pb-1.5">เหรียญ (Coins)</h4>
+                                
+                                <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border">
+                                    <div class="w-16 text-center text-xs font-bold bg-slate-300 text-slate-700 rounded py-1">10 บาท</div>
+                                    <input type="number" id="c-coin10" min="0" oninput="sumCashReconciliation()" placeholder="จำนวนเหรียญ" class="w-full bg-white border p-1.5 text-right text-sm rounded outline-none denom-input">
+                                </div>
+                                <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border">
+                                    <div class="w-16 text-center text-xs font-bold bg-slate-300 text-slate-700 rounded py-1">5 บาท</div>
+                                    <input type="number" id="c-coin5" min="0" oninput="sumCashReconciliation()" placeholder="จำนวนเหรียญ" class="w-full bg-white border p-1.5 text-right text-sm rounded outline-none denom-input">
+                                </div>
+                                <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border">
+                                    <div class="w-16 text-center text-xs font-bold bg-slate-300 text-slate-700 rounded py-1">2 บาท</div>
+                                    <input type="number" id="c-coin2" min="0" oninput="sumCashReconciliation()" placeholder="จำนวนเหรียญ" class="w-full bg-white border p-1.5 text-right text-sm rounded outline-none denom-input">
+                                </div>
+                                <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border">
+                                    <div class="w-16 text-center text-xs font-bold bg-slate-300 text-slate-700 rounded py-1">1 บาท</div>
+                                    <input type="number" id="c-coin1" min="0" oninput="sumCashReconciliation()" placeholder="จำนวนเหรียญ" class="w-full bg-white border p-1.5 text-right text-sm rounded outline-none denom-input">
+                                </div>
+                                <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border">
+                                    <div class="w-16 text-center text-[10px] font-bold bg-amber-100 text-amber-800 rounded py-1 leading-none">สตางค์/อื่น</div>
+                                    <input type="number" id="c-coinSub" min="0" oninput="sumCashReconciliation()" placeholder="ยอดรวมบาท" class="w-full bg-white border p-1.5 text-right text-sm rounded outline-none denom-input">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary & Verification Pane -->
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+                        <div class="space-y-1">
+                            <h3 class="font-bold text-slate-800 text-base">เปรียบเทียบยอดกระทบเงินสด</h3>
+                            <p class="text-xs text-slate-400">ระบบจะดุลยอดทางบัญชีเพื่อคำนวณหาส่วนต่างก่อนปิดยอด</p>
+                        </div>
+
+                        <!-- Mathematical Reconciliation Summary -->
+                        <div class="space-y-3 pt-3 border-t">
+                            <div class="flex justify-between items-center text-sm text-slate-500">
+                                <span>ยอดคาดการณ์ในสมุดบัญชี:</span>
+                                <span class="font-semibold text-slate-700" id="expected-cash-display">0.00 ฿</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm text-slate-500">
+                                <span>ยอดนับจริงในมือสัปดาห์นี้:</span>
+                                <span class="font-semibold text-slate-700" id="actual-cash-display">0.00 ฿</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 rounded-xl text-sm font-bold bg-slate-50" id="variance-box">
+                                <span>ผลต่างยอดบัญชี:</span>
+                                <span id="variance-display">0.00 ฿</span>
+                            </div>
+                        </div>
+
+                        <!-- Force Rollover (Accounting Override) -->
+                        <div id="reconciliation-override" class="hidden space-y-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                            <label class="block text-xs font-bold text-amber-800">⚠️ บันทึกคำอธิบายส่วนต่างเงินสด (เพื่อข้ามสิทธิ์อนุมัติ)</label>
+                            <input type="text" id="reconciliation-override-reason" placeholder="เช่น เงินทอนผิดพลาดสะสม / ค้นหาบิลไม่พบ" class="w-full border border-amber-300 focus:border-amber-500 rounded-lg p-2 text-xs outline-none bg-white">
+                        </div>
+
+                        <div class="space-y-2">
+                            <button id="btn-execute-rollover" onclick="executeRollover()" disabled class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-white bg-slate-300 cursor-not-allowed transition-all shadow-md">
+                                <i data-lucide="lock-keyhole" class="w-4 h-4"></i>
+                                <span id="btn-rollover-text">กรอกจำนวนเงินสดกระทบยอด...</span>
+                            </button>
+                            <p id="variance-msg" class="text-center text-xs font-semibold text-rose-500 h-4"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS TAB (For Integration Settings) -->
+            <div id="tab-settings" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Church Info Settings -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 lg:col-span-2">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-1.5 pb-2 border-b border-slate-100">
+                            <i data-lucide="church" class="w-5 h-5 text-indigo-600"></i> ข้อมูลคริสตจักร (ใช้พิมพ์บนใบอนุโมทนา)
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">ชื่อคริสตจักร</label>
+                                <input type="text" id="setting-church-name" placeholder="คริสตจักรชีวิตสุขสันต์กาฬสินธุ์" class="w-full border border-slate-300 focus:border-indigo-500 rounded-lg py-2 px-3 text-sm outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">เว็บไซต์ / เพจ Facebook</label>
+                                <input type="url" id="setting-church-website" placeholder="https://facebook.com/..." class="w-full border border-slate-300 focus:border-indigo-500 rounded-lg py-2 px-3 text-sm outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Webhook Settings -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-1.5 pb-2 border-b border-slate-100">
+                            <i data-lucide="settings-2" class="w-5 h-5 text-indigo-600"></i> ตั้งค่า API / Webhook (Real Connection)
+                        </h3>
+                        <p class="text-xs text-slate-400">เมื่อกำหนด URL ไว้ ระบบจะส่ง (POST) ข้อมูล JSON ออกไปยังปลายทางนี้แบบทางเดียวทุกครั้งที่มีการบันทึกรายรับ/รายจ่าย/อนุมัติใบเสร็จ/ปิดรอบสัปดาห์ เพื่อให้คุณนำไปต่อยอดเก็บลง Google Sheets หรือระบบอื่นได้ (เว้นว่างได้หากยังไม่ต้องการเชื่อมต่อ)</p>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Make.com / Webhook Target URL</label>
+                                <input type="url" id="setting-webhook-url" placeholder="https://hook.us1.make.com/xxxxxxxxxxxx" class="w-full border border-slate-300 focus:border-indigo-500 rounded-lg py-2 px-3 text-xs outline-none font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">ยอดยกมาเริ่มต้น - เงินในบัญชีธนาคาร (ตั้งครั้งแรกเท่านั้น)</label>
+                                <input type="number" id="setting-init-bank" placeholder="0" class="w-full border border-slate-300 focus:border-indigo-500 rounded-lg py-2 px-3 text-xs outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">ยอดยกมาเริ่มต้น - เงินสดในกล่อง (ตั้งครั้งแรกเท่านั้น)</label>
+                                <input type="number" id="setting-init-cash" placeholder="0" class="w-full border border-slate-300 focus:border-indigo-500 rounded-lg py-2 px-3 text-xs outline-none">
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="saveSettings()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl text-xs transition-colors flex items-center gap-1">
+                                <i data-lucide="save" class="w-3.5 h-3.5"></i> บันทึกค่าระบบ
+                            </button>
+                            <button onclick="resetSystemData()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-2 px-4 rounded-xl text-xs transition-colors">
+                                ล้างข้อมูลทั้งหมดและเริ่มใหม่
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- JSON Backup & Database State Export -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-1.5 pb-2 border-b border-slate-100">
+                            <i data-lucide="database" class="w-5 h-5 text-slate-600"></i> การจัดการสำรองข้อมูล (Database JSON)
+                        </h3>
+                        <p class="text-xs text-slate-400">ดึงข้อมูลทั้งหมดออกเป็นรูปแบบไฟล์ดิบ (JSON Backup) เพื่อใช้สำหรับงานพัฒนาระบบคลาวด์หรือดึงข้อมูลคืนสภาพ (Restore)</p>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="exportSystemJSON()" class="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl transition-all group">
+                                <i data-lucide="download-cloud" class="w-8 h-8 text-indigo-600 group-hover:scale-110 transition-transform mb-2"></i>
+                                <span class="text-xs font-bold text-slate-700">Backup (JSON)</span>
+                            </button>
+                            
+                            <label class="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl cursor-pointer transition-all group">
+                                <i data-lucide="upload-cloud" class="w-8 h-8 text-emerald-600 group-hover:scale-110 transition-transform mb-2"></i>
+                                <span class="text-xs font-bold text-slate-700">Restore (JSON)</span>
+                                <input type="file" id="system-json-importer" accept=".json" class="hidden" onchange="importSystemJSON(event)">
+                            </label>
+                        </div>
+                        
+                        <div class="p-4 bg-amber-50 text-amber-800 text-[10px] rounded-xl space-y-1">
+                            <h4 class="font-bold">📘 หมายเหตุสำหรับนักพัฒนา:</h4>
+                            <p>Webhook ของระบบนี้เป็นการส่งออกทางเดียว (fire-and-forget) เหมาะกับ Google Apps Script / Make.com ที่รับ JSON แล้วบันทึกลง Sheet ได้ทันที ระบบไม่รองรับการรับข้อมูลย้อนกลับเข้ามาอัตโนมัติ — ทุกรายการยังต้องกรอก/ตรวจสอบในแอปนี้เสมอ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RECEIPTS TAB (ใบอนุโมทนา / ใบรับบริจาค) -->
+            <div id="tab-receipts" class="tab-content space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="file-badge-2" class="w-4 h-4 text-purple-500"></i> ออกใบอนุโมทนา / ใบรับบริจาคของสัปดาห์นี้
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">เลือกผู้ถวายจากรายการที่กรอกไว้ในแท็บ "บันทึกรายรับ" เพื่อพิมพ์ใบรับบริจาคให้เก็บเป็นหลักฐาน/ใช้ลดหย่อนภาษี</p>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto grid-scroll">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                    <th class="py-3 px-4">ชื่อผู้ถวาย</th>
+                                    <th class="py-3 px-4 text-right">ยอดรวม (บาท)</th>
+                                    <th class="py-3 px-4 text-center">ช่องทาง</th>
+                                    <th class="py-3 px-4 text-center w-32">ใบเสร็จ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="receipts-list-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HELP TAB (คู่มือ / ช่วยเหลือ) -->
+            <div id="tab-help" class="tab-content space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2 text-base">
+                        <i data-lucide="circle-help" class="w-5 h-5 text-indigo-500"></i> คำถามที่พบบ่อย
+                    </h3>
+                    <div class="space-y-4 text-sm">
+                        <div>
+                            <p class="font-semibold text-slate-700">บันทึกรายรับ-รายจ่ายยังไง?</p>
+                            <p class="text-slate-500 text-xs mt-1">ไปที่ "บันทึกรายรับประจำสัปดาห์" กรอกยอดถวายแยกตามประเภทของแต่ละคน หรือไปที่ "บันทึกใบเบิกจ่ายเงิน" สำหรับรายจ่าย กดบันทึกแต่ละรายการได้ทันที ไม่ต้องรอปิดสัปดาห์</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-700">แนบใบเสร็จทำงานอย่างไร?</p>
+                            <p class="text-slate-500 text-xs mt-1">ไปที่ "แนบใบเสร็จ / รอตรวจสอบ" แนบรูปใบเสร็จจริงพร้อมกรอกรายละเอียดผู้เบิกและจำนวนเงินด้วยตนเอง (ระบบไม่มีการอ่านข้อมูลอัตโนมัติ) รายการจะเข้าคิวรอ แล้วต้องกด "อนุมัติ" อีกครั้งก่อนจะตัดเข้าบัญชีจริง</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-700">ปิดยอดวันอาทิตย์ทำไปทำไม?</p>
+                            <p class="text-slate-500 text-xs mt-1">เพื่อกระทบยอดเงินสด/เงินในบัญชีจริงกับตัวเลขในสมุดบัญชี ก่อนยกยอดคงเหลือไปเป็นยอดยกมาของสัปดาห์ถัดไป และล้างตารางรายรับ-รายจ่ายให้เริ่มสัปดาห์ใหม่</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-700">ตั้งค่า Webhook เพื่ออะไร?</p>
+                            <p class="text-slate-500 text-xs mt-1">ถ้าใส่ URL ปลายทางไว้ในหน้าตั้งค่า ระบบจะส่งข้อมูลออกไปอัตโนมัติทุกครั้งที่บันทึกรายรับ/รายจ่าย/อนุมัติใบเสร็จ/ปิดสัปดาห์ เพื่อให้เชื่อมกับ Google Sheets หรือระบบอื่นที่คุณตั้งไว้ (ไม่บังคับ)</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-700">ข้อมูลเก็บไว้ที่ไหน ปลอดภัยไหม?</p>
+                            <p class="text-slate-500 text-xs mt-1">ข้อมูลทั้งหมดเก็บในเบราว์เซอร์ของเครื่องที่เปิดแอปนี้เท่านั้น (ไม่ sync ข้ามเครื่อง) ควรกด "Backup (JSON)" ในหน้าตั้งค่าเป็นประจำเพื่อสำรองข้อมูลไว้กันเครื่องหาย</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Core Javascript Code -->
+    <script>
+        // Initial defaults setup
+        const initialWeek = 1;
+        let state = JSON.parse(localStorage.getItem('churchWeeklyApp_v20')) || {
+            weekIndex: initialWeek,
+            openingCash: 0, 
+            openingBank: 0,
+            cash: 0,
+            bank: 0,
+            webhookUrl: "", // Save webhook url here
+            churchName: "",
+            churchWebsite: "",
+            weeklyNote: "",
+            donationRows: [],
+            expenseLogs: [],
+            history: [],
+            aiInbox: []
+        };
+        // Backfill for older saved data that predates these fields
+        if (state.churchName === undefined) state.churchName = "";
+        if (state.churchWebsite === undefined) state.churchWebsite = "";
+        if (state.weeklyNote === undefined) state.weeklyNote = "";
+
+        // Format decimal numbers with commas
+        const formatMoney = (val) => Number(val).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        function save() {
+            localStorage.setItem('churchWeeklyApp_v20', JSON.stringify(state));
+            calculateLiveTotals();
+        }
+
+        // Switch navigation tabs
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-800/50', 'text-white', 'border', 'border-slate-700/30');
+                btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-800/50');
+            });
+
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-800/50');
+            activeBtn.classList.add('bg-slate-800/50', 'text-white', 'border', 'border-slate-700/30');
+
+            // Dynamic header title update
+            const titles = {
+                dashboard: 'แดชบอร์ดสรุปยอดสะสม',
+                paypers: 'แนบใบเสร็จและตรวจสอบก่อนบันทึกบัญชี',
+                income: 'บันทึกรายรับประจำสัปดาห์ (Digital Form)',
+                receipts: 'ออกใบอนุโมทนา / ใบรับบริจาค',
+                expense: 'บันทึกรายจ่ายและการเบิกเงิน',
+                rollover: 'กระทบยอดและปิดบัญชีประจำรอบสัปดาห์',
+                settings: 'ตั้งค่าการเชื่อมต่อ API Webhook & สำรองข้อมูล',
+                help: 'คู่มือการใช้งาน / ช่วยเหลือ'
+            };
+            document.getElementById('page-title').innerText = titles[tabId];
+            
+            lucide.createIcons();
+            if (tabId === 'rollover') {
+                sumCashReconciliation();
+            } else if (tabId === 'settings') {
+                loadSettingsToUI();
+            } else if (tabId === 'receipts') {
+                renderReceiptsList();
+            }
+        }
+
+        // Initialize digital donation spreadsheet with empty rows if empty
+        function initializeSpreadsheet() {
+            if (state.donationRows.length === 0) {
+                for (let i = 0; i < 3; i++) {
+                    state.donationRows.push(createEmptyDonationRow());
+                }
+            }
+            renderDonationRows();
+        }
+
+        function createEmptyDonationRow() {
+            return { name: "", tithe: 0, rent: 0, memorial: 0, mission: 0, special: 0, land: 0, party: 0, method: "cash" };
+        }
+
+        function addDonationRow() {
+            state.donationRows.push(createEmptyDonationRow());
+            renderDonationRows();
+            save();
+        }
+
+        function deleteDonationRow(index) {
+            state.donationRows.splice(index, 1);
+            if (state.donationRows.length === 0) {
+                state.donationRows.push(createEmptyDonationRow());
+            }
+            renderDonationRows();
+            save();
+        }
+
+        function renderDonationRows() {
+            const container = document.getElementById('donation-rows');
+            container.innerHTML = "";
+
+            state.donationRows.forEach((row, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                
+                const rowTotal = (row.tithe || 0) + (row.rent || 0) + (row.memorial || 0) + (row.mission || 0) + (row.special || 0) + (row.land || 0) + (row.party || 0);
+
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 text-center font-bold text-slate-400 border border-slate-200 bg-slate-50/50">${idx + 1}</td>
+                    <td class="py-2 px-3 border border-slate-200 income-cell">
+                        <input type="text" value="${row.name}" onchange="updateDonationCell(${idx}, 'name', this.value)" placeholder="ชื่อผู้ถวาย..." class="w-full bg-transparent outline-none focus:bg-white p-1 rounded font-medium text-slate-800">
+                    </td>
+                    <td class="py-2 px-2 border border-slate-200 income-cell">
+                        <input type="number" value="${row.tithe || ''}" onchange="updateDonationCell(${idx}, 'tithe', this.value)" placeholder="-" class="w-full bg-transparent text-right outline-none font-semibold text-slate-800 p-1 rounded focus:bg-slate-50">
+                    </td>
+                    <td class="py-2 px-2 border border-slate-200 income-cell">
+                        <input type="number" value="${row.rent || ''}" onchange="updateDonationCell(${idx}, 'rent', this.value)" placeholder="-" class="w-full bg-transparent text-right outline-none font-semibold text-slate-800 p-1 rounded focus:bg-slate-50">
+                    </td>
+                    <td class="py-2 px-2 border border-slate-200 income-cell">
+                        <input type="number" value="${row.memorial || ''}" onchange="updateDonationCell(${idx}, 'memorial', this.value)" placeholder="-" class="w-full bg-transparent text-right outline-none font-semibold text-slate-800 p-1 rounded focus:bg-slate-50">
+                    </td>
+                    <td class="py-2 px-2 border border-slate-200 income-cell">
+                        <input type="number" value="${row.mission || ''}" onchange="updateDonationCell(${idx}, 'mission', this.value)" placeholder="-" class="w-full bg-transparent text-right outline-none font-semibold text-slate-800 p-1 rounded focus:bg-slate-50">
+                    </td>
+                    <td class="py-2 px-2 border border-slate-200 income-cell">
+                        <input type="number" value="${row.special || ''}" onchange="updateDonationCell(${idx}, 'special', this.value)" placeholder="-" class="w-full bg-transparent text-right outline-none font-semibold text-slate-800 p-1 rounded focus:bg-slate-50">
+                    </td>
+                    <td class="py-2 px-2 border border-slate-200 income-cell">
+                        <input type="number" value="${row.land || ''}" onchange="updateDonationCell(${idx}, 'land', this.value)" placeholder="-" class="w-full bg-transparent text-right outline-none font-semibold text-slate-800 p-1 rounded focus:bg-slate-50">
+                    </td>
+                    <td class="py-2 px-2 border border-slate-200 income-cell">
+                        <input type="number" value="${row.party || ''}" onchange="updateDonationCell(${idx}, 'party', this.value)" placeholder="-" class="w-full bg-transparent text-right outline-none font-semibold text-slate-800 p-1 rounded focus:bg-slate-50">
+                    </td>
+                    <td class="py-2 px-2 border border-slate-200 text-center">
+                        <select onchange="updateDonationCell(${idx}, 'method', this.value)" class="bg-slate-100 hover:bg-slate-200 py-1 px-1.5 rounded-lg text-xs font-semibold outline-none text-slate-600 transition-colors">
+                            <option value="cash" ${row.method === 'cash' ? 'selected' : ''}>💵 เงินสด</option>
+                            <option value="online" ${row.method === 'online' ? 'selected' : ''}>📱 โอน</option>
+                        </select>
+                    </td>
+                    <td class="py-2 px-4 border border-slate-200 text-right font-extrabold text-slate-700 bg-slate-50/50 min-w-[100px]">${formatMoney(rowTotal)}</td>
+                    <td class="py-2 px-2 border border-slate-200 text-center">
+                        <button onclick="deleteDonationRow(${idx})" class="p-1 text-slate-400 hover:text-rose-500 rounded transition-colors">
+                            <i data-lucide="trash" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                container.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function updateDonationCell(index, field, value) {
+            if (field === 'name' || field === 'method') {
+                state.donationRows[index][field] = value;
+            } else {
+                state.donationRows[index][field] = parseFloat(value) || 0;
+            }
+            renderDonationRows();
+            save();
+        }
+
+        // Handle real receipt image attach (preview only, no OCR — user fills the form manually)
+        let pendingReceiptImage = null;
+        function handleRealFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                pendingReceiptImage = { fileName: file.name, dataUrl: e.target.result };
+                const img = document.getElementById('receipt-preview-img');
+                const icon = document.getElementById('receipt-preview-icon');
+                const label = document.getElementById('receipt-preview-label');
+                img.src = e.target.result;
+                img.classList.remove('hidden');
+                icon.classList.add('hidden');
+                label.innerText = file.name;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Add the filled-in form + attached image to the verification inbox (real data, no AI)
+        function addToReceiptInbox() {
+            const requester = document.getElementById('rc-requester').value.trim();
+            const payee = document.getElementById('rc-payee').value.trim();
+            const purpose = document.getElementById('rc-purpose').value.trim();
+            const amount = parseFloat(document.getElementById('rc-amount').value) || 0;
+            const method = document.getElementById('rc-method').value;
+
+            if (!requester || amount <= 0) {
+                showCustomAlert("กรุณากรอกผู้เบิกเงินและจำนวนเงินให้ครบถ้วน!", "bg-rose-600");
+                return;
+            }
+
+            const newInboxRecord = {
+                id: "rc_" + Date.now(),
+                fileName: pendingReceiptImage ? pendingReceiptImage.fileName : "",
+                fileData: pendingReceiptImage ? pendingReceiptImage.dataUrl : "",
+                type: "EXPENSE",
+                date: new Date().toLocaleDateString('th-TH'),
+                requester,
+                payee: payee || requester,
+                purpose: purpose || "-",
+                amount,
+                method,
+                status: "PENDING"
+            };
+
+            state.aiInbox.unshift(newInboxRecord);
+            save();
+            renderAiInbox();
+
+            if (state.webhookUrl) {
+                fireWebhookNotification("RECEIPT_QUEUED", newInboxRecord);
+            }
+
+            // Reset form
+            document.getElementById('rc-requester').value = "";
+            document.getElementById('rc-payee').value = "";
+            document.getElementById('rc-purpose').value = "";
+            document.getElementById('rc-amount').value = "";
+            document.getElementById('rc-method').value = "cash";
+            document.getElementById('real-file-picker').value = "";
+            pendingReceiptImage = null;
+            const img = document.getElementById('receipt-preview-img');
+            const icon = document.getElementById('receipt-preview-icon');
+            const label = document.getElementById('receipt-preview-label');
+            img.classList.add('hidden');
+            icon.classList.remove('hidden');
+            label.innerText = "แตะเพื่อเลือกรูปใบเสร็จ/สลิป (ไม่บังคับ)";
+            lucide.createIcons();
+
+            showCustomAlert("ส่งรายการเข้าคิวรอตรวจสอบแล้ว!");
+        }
+
+        // Fire real integration Webhook POST (no-op silently if no URL is configured)
+        function fireWebhookNotification(eventType, payload) {
+            if (!state.webhookUrl) return;
+            console.log("Triggering integration webhook for:", eventType);
+            fetch(state.webhookUrl, {
+                method: "POST",
+                mode: "no-cors", // Prevents CORS preflight crash on simple setups
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    event: eventType,
+                    timestamp: new Date().toISOString(),
+                    weekIndex: state.weekIndex,
+                    payload: payload
+                })
+            })
+            .then(() => {
+                showCustomAlert("🔌 ส่งข้อมูลไปยัง Webhook เรียบร้อยแล้ว", "bg-indigo-600");
+            })
+            .catch(err => {
+                console.error("Webhook trigger failed:", err);
+                showCustomAlert("⚠️ ส่งข้อมูล Webhook ไม่สำเร็จ (ตรวจสอบ URL หรือการเชื่อมต่อ)", "bg-rose-600");
+            });
+        }
+
+        function clearDonationTable() {
+            state.donationRows = [createEmptyDonationRow(), createEmptyDonationRow(), createEmptyDonationRow()];
+            renderDonationRows();
+            save();
+        }
+
+        // Compute live balances dynamically based on entries & expenses
+        function calculateLiveTotals() {
+            let sumTithe = 0;
+            let sumRent = 0;
+            let sumMemorial = 0;
+            let sumMission = 0;
+            let sumSpecial = 0;
+            let sumLand = 0;
+            let sumParty = 0;
+            let sumTotal = 0;
+
+            let liveCashIncome = 0;
+            let liveOnlineIncome = 0;
+
+            state.donationRows.forEach(row => {
+                const tithe = row.tithe || 0;
+                const rent = row.rent || 0;
+                const memorial = row.memorial || 0;
+                const mission = row.mission || 0;
+                const special = row.special || 0;
+                const land = row.land || 0;
+                const party = row.party || 0;
+                const total = tithe + rent + memorial + mission + special + land + party;
+
+                sumTithe += tithe;
+                sumRent += rent;
+                sumMemorial += memorial;
+                sumMission += mission;
+                sumSpecial += special;
+                sumLand += land;
+                sumParty += party;
+                sumTotal += total;
+
+                if (row.method === 'cash') {
+                    liveCashIncome += total;
+                } else {
+                    liveOnlineIncome += total;
+                }
+            });
+
+            // Update live totals footer in spreadsheet grid
+            document.getElementById('sum-tithe').innerText = formatMoney(sumTithe);
+            document.getElementById('sum-rent').innerText = formatMoney(sumRent);
+            document.getElementById('sum-memorial').innerText = formatMoney(sumMemorial);
+            document.getElementById('sum-mission').innerText = formatMoney(sumMission);
+            document.getElementById('sum-special').innerText = formatMoney(sumSpecial);
+            document.getElementById('sum-land').innerText = formatMoney(sumLand);
+            document.getElementById('sum-party').innerText = formatMoney(sumParty);
+            document.getElementById('sum-total').innerText = formatMoney(sumTotal);
+
+            document.getElementById('live-row-cash').innerText = formatMoney(liveCashIncome);
+            document.getElementById('live-row-online').innerText = formatMoney(liveOnlineIncome);
+
+            // Compute expenses
+            let totalCashExpense = 0;
+            let totalBankExpense = 0;
+
+            state.expenseLogs.forEach(exp => {
+                if (exp.method === 'cash') {
+                    totalCashExpense += exp.amount;
+                } else {
+                    totalBankExpense += exp.amount;
+                }
+            });
+
+            // Live balances computation (Beginning + Weekly Income - Expenses)
+            state.cash = (state.openingCash + liveCashIncome) - totalCashExpense;
+            state.bank = (state.openingBank + liveOnlineIncome) - totalBankExpense;
+
+            // Render on top dashboard KPI blocks
+            document.getElementById('dash-cash').innerText = formatMoney(state.cash);
+            document.getElementById('dash-bank').innerText = formatMoney(state.bank);
+            document.getElementById('dash-total').innerText = formatMoney(state.cash + state.bank);
+            document.getElementById('current-week-num').innerText = state.weekIndex;
+
+            renderFundBreakdown({ tithe: sumTithe, rent: sumRent, memorial: sumMemorial, mission: sumMission, special: sumSpecial, land: sumLand, party: sumParty });
+        }
+
+        // Render the fund-category breakdown card (all-time from history + this week's live rows)
+        function renderFundBreakdown(currentWeek) {
+            const grid = document.getElementById('fund-breakdown-grid');
+            if (!grid) return; // Not on dashboard yet
+
+            const funds = [
+                { key: 'tithe', label: 'สิบลด', icon: 'coins', color: 'text-emerald-600' },
+                { key: 'rent', label: 'ค่าเช่าฯ', color: 'text-sky-600' },
+                { key: 'memorial', label: 'อนุสรณ์ฯ', color: 'text-purple-600' },
+                { key: 'mission', label: 'พันธกิจ', color: 'text-indigo-600' },
+                { key: 'special', label: 'ถวายพิเศษ', color: 'text-amber-600' },
+                { key: 'land', label: 'ที่ดิน', color: 'text-rose-600' },
+                { key: 'party', label: 'ปาร์ตี้', color: 'text-slate-600' },
+            ];
+
+            const totals = { tithe: 0, rent: 0, memorial: 0, mission: 0, special: 0, land: 0, party: 0 };
+            state.history.forEach(week => {
+                funds.forEach(f => { totals[f.key] += week[f.key] || 0; });
+            });
+            funds.forEach(f => { totals[f.key] += currentWeek[f.key] || 0; });
+
+            grid.innerHTML = funds.map(f => `
+                <div class="p-4 text-center">
+                    <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">${f.label}</p>
+                    <p class="text-base font-bold ${f.color} figure-num mt-1">${formatMoney(totals[f.key])}</p>
+                </div>
+            `).join('');
+        }
+
+        // Render the printable donation-receipt list (this week's donors)
+        function renderReceiptsList() {
+            const tbody = document.getElementById('receipts-list-body');
+            if (!tbody) return;
+
+            const rows = state.donationRows.filter(r => r.name && r.name.trim() !== '');
+
+            if (rows.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="4" class="py-8 px-4 text-center text-slate-400 text-sm">
+                        ยังไม่มีรายชื่อผู้ถวายในสัปดาห์นี้ — กรอกข้อมูลในแท็บ "บันทึกรายรับประจำสัปดาห์" ก่อน
+                    </td></tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = rows.map((row, idx) => {
+                const total = (row.tithe || 0) + (row.rent || 0) + (row.memorial || 0) + (row.mission || 0) + (row.special || 0) + (row.land || 0) + (row.party || 0);
+                const realIdx = state.donationRows.indexOf(row);
+                return `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50/60">
+                        <td class="py-3 px-4 font-semibold text-slate-800">${row.name}</td>
+                        <td class="py-3 px-4 text-right font-bold text-slate-800 figure-num">${formatMoney(total)}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="text-xs font-medium ${row.method === 'cash' ? 'text-emerald-600' : 'text-indigo-600'}">${row.method === 'cash' ? '💵 เงินสด' : '📱 โอน'}</span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <button onclick="printDonationReceipt(${realIdx})" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 mx-auto">
+                                <i data-lucide="printer" class="w-3.5 h-3.5"></i> พิมพ์ใบเสร็จ
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        // Open a print-friendly donation receipt for a single donor row
+        function printDonationReceipt(idx) {
+            const row = state.donationRows[idx];
+            if (!row || !row.name) return;
+
+            const funds = [
+                { key: 'tithe', label: 'ถวายทศางค์ (สิบลด)' },
+                { key: 'rent', label: 'ค่าเช่าฯ' },
+                { key: 'memorial', label: 'ถวายอนุสรณ์' },
+                { key: 'mission', label: 'ถวายพันธกิจ' },
+                { key: 'special', label: 'ถวายพิเศษ' },
+                { key: 'land', label: 'ถวายที่ดิน' },
+                { key: 'party', label: 'ปาร์ตี้/กิจกรรม' },
+            ];
+            const lines = funds.filter(f => (row[f.key] || 0) > 0)
+                .map(f => `<tr><td style="padding:4px 0;">${f.label}</td><td style="padding:4px 0;text-align:right;">${formatMoney(row[f.key])} บาท</td></tr>`)
+                .join('');
+            const total = funds.reduce((sum, f) => sum + (row[f.key] || 0), 0);
+            const churchName = state.churchName || "คริสตจักร";
+            const today = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            const receiptHtml = `
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>ใบอนุโมทนา - ${row.name}</title>
+                    <style>
+                        body { font-family: 'Sarabun', sans-serif; padding: 40px; color: #1e293b; }
+                        h1 { font-size: 20px; margin-bottom: 4px; }
+                        .sub { color: #64748b; font-size: 13px; margin-bottom: 24px; }
+                        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+                        .total-row td { border-top: 2px solid #1e293b; font-weight: bold; padding-top: 10px; }
+                        .box { border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; max-width: 480px; margin: 0 auto; }
+                        .footer { margin-top: 40px; font-size: 12px; color: #94a3b8; text-align: center; }
+                    </style>
+                </head>
+                <body onload="window.print()">
+                    <div class="box">
+                        <h1>ใบอนุโมทนา / ใบรับบริจาค</h1>
+                        <p class="sub">${churchName} — วันที่ ${today} (สัปดาห์ที่ ${state.weekIndex})</p>
+                        <p><strong>ผู้ถวาย:</strong> ${row.name}</p>
+                        <p><strong>ช่องทาง:</strong> ${row.method === 'cash' ? 'เงินสด' : 'โอนผ่านบัญชี'}</p>
+                        <table>${lines}<tr class="total-row"><td>รวมทั้งสิ้น</td><td style="text-align:right;">${formatMoney(total)} บาท</td></tr></table>
+                        <div class="footer">ขอพระเจ้าทรงอวยพระพร ขอบพระคุณสำหรับการถวายทรัพย์</div>
+                    </div>
+                </body>
+                </html>
+            `;
+            const w = window.open('', '_blank', 'width=500,height=650');
+            w.document.write(receiptHtml);
+            w.document.close();
+        }
+
+
+        function saveDonationToSystem() {
+            calculateLiveTotals();
+            fireWebhookNotification("INCOME_SAVED", { donationRows: state.donationRows });
+            showCustomAlert("บันทึกใบรายงานรับเงินประจำสัปดาห์เรียบร้อย!");
+            switchTab('dashboard');
+        }
+
+        // Custom Safe Alert implementation
+        function showCustomAlert(msg, bgClass = "bg-slate-900") {
+            const toast = document.createElement("div");
+            toast.className = `apple-toast fixed bottom-5 right-5 ${bgClass} text-white text-xs px-5 py-3 rounded-xl shadow-lg z-50 flex items-center gap-2`;
+            toast.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> ${msg}`;
+            document.body.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
+
+        // Expense Logs Manager
+        function addExpenseTransaction() {
+            const requester = document.getElementById('exp-requester').value.trim();
+            const payee = document.getElementById('exp-payee').value.trim();
+            const purpose = document.getElementById('exp-purpose').value.trim();
+            const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
+            const method = document.getElementById('exp-method').value;
+
+            if (!requester || !payee || amount <= 0) {
+                showCustomAlert("กรุณากรอกข้อมูลผู้เบิกจ่ายและจำนวนเงินให้ครบถ้วน!", "bg-rose-600");
+                return;
+            }
+
+            executeAddExpense(requester, payee, purpose, amount, method);
+
+            // Clear inputs
+            document.getElementById('exp-requester').value = "";
+            document.getElementById('exp-payee').value = "";
+            document.getElementById('exp-purpose').value = "";
+            document.getElementById('exp-amount').value = "";
+        }
+
+        function executeAddExpense(requester, payee, purpose, amount, method, customDate = null) {
+            const timestamp = customDate || new Date().toLocaleDateString('th-TH', { 
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+
+            const newExp = {
+                timestamp,
+                requester,
+                payee,
+                purpose,
+                amount,
+                method
+            };
+
+            state.expenseLogs.push(newExp);
+            save();
+            renderExpenseLogs();
+            fireWebhookNotification("EXPENSE_ADDED", newExp);
+            showCustomAlert(`บันทึกใบเบิกเงิน ${formatMoney(amount)} บาท เรียบร้อย!`);
+        }
+
+        function deleteExpenseLog(idx) {
+            state.expenseLogs.splice(idx, 1);
+            save();
+            renderExpenseLogs();
+        }
+
+        function renderExpenseLogs() {
+            const tbody = document.getElementById('expense-logs-body');
+            tbody.innerHTML = "";
+
+            if (state.expenseLogs.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 px-4 text-center text-slate-400">
+                            ยังไม่มีรายการเบิกจ่ายเงินสดหรือบัญชีในรอบสัปดาห์นี้
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            state.expenseLogs.forEach((exp, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'expense-row';
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-slate-500 font-medium">${exp.timestamp}</td>
+                    <td class="py-3 px-4 font-bold text-slate-800">${exp.requester}</td>
+                    <td class="py-3 px-4 text-slate-600">
+                        ${exp.purpose}
+                        <span class="block text-[10px] text-slate-400">จ่ายให้: ${exp.payee}</span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${exp.method === 'cash' ? 'bg-emerald-50 text-emerald-700' : 'bg-indigo-50 text-indigo-700'}">
+                            ${exp.method === 'cash' ? '💵 เงินสด' : '📱 ธนาคาร'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-right font-extrabold text-slate-800">${formatMoney(exp.amount)} ฿</td>
+                    <td class="py-3 px-3 text-center">
+                        <button onclick="deleteExpenseLog(${idx})" class="p-1 text-slate-400 hover:text-rose-500 rounded transition-colors">
+                            <i data-lucide="trash" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        // Sunday physical banknote counter
+        function sumCashReconciliation() {
+            const v1000 = (parseInt(document.getElementById('c-1000').value) || 0) * 1000;
+            const v500 = (parseInt(document.getElementById('c-500').value) || 0) * 500;
+            const v100 = (parseInt(document.getElementById('c-100').value) || 0) * 100;
+            const v50 = (parseInt(document.getElementById('c-50').value) || 0) * 50;
+            const v20 = (parseInt(document.getElementById('c-20').value) || 0) * 20;
+
+            const c10 = (parseInt(document.getElementById('c-coin10').value) || 0) * 10;
+            const c5 = (parseInt(document.getElementById('c-coin5').value) || 0) * 5;
+            const c2 = (parseInt(document.getElementById('c-coin2').value) || 0) * 2;
+            const c1 = (parseInt(document.getElementById('c-coin1').value) || 0) * 1;
+            const cSub = parseFloat(document.getElementById('c-coinSub').value) || 0;
+
+            const totalActual = v1000 + v500 + v100 + v50 + v20 + c10 + c5 + c2 + c1 + cSub;
+            const expectedCash = state.cash;
+            const variance = totalActual - expectedCash;
+
+            document.getElementById('expected-cash-display').innerText = `${formatMoney(expectedCash)} ฿`;
+            document.getElementById('actual-cash-display').innerText = `${formatMoney(totalActual)} ฿`;
+            
+            const vBox = document.getElementById('variance-box');
+            const vDisp = document.getElementById('variance-display');
+            const vMsg = document.getElementById('variance-msg');
+            const btn = document.getElementById('btn-execute-rollover');
+            const btnText = document.getElementById('btn-rollover-text');
+            const overrideBox = document.getElementById('reconciliation-override');
+
+            if (totalActual === 0 && expectedCash > 0) {
+                btn.disabled = true;
+                btn.className = "w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-white bg-slate-300 cursor-not-allowed transition-all shadow-md";
+                btnText.innerText = "กรอกจำนวนเงินสดเพื่อตรวจสอบ...";
+                vDisp.innerText = "0.00 ฿";
+                vBox.className = "flex justify-between items-center p-3 rounded-xl text-sm font-bold bg-slate-50";
+                vMsg.innerText = "";
+                overrideBox.classList.add('hidden');
+            } else if (Math.abs(variance) < 0.01) {
+                btn.disabled = false;
+                btn.className = "w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer";
+                btnText.innerText = "ยอดตรงกันสมบูรณ์! กดปิดบัญชีสัปดาห์";
+                vDisp.innerText = "0.00 ฿";
+                vBox.className = "flex justify-between items-center p-3 rounded-xl text-sm font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
+                vMsg.innerText = "";
+                overrideBox.classList.add('hidden');
+            } else {
+                // Mismatch found - Allow manual adjustment for accounting overrides (Real Usability!)
+                btn.disabled = false;
+                btn.className = "w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-700 active:bg-amber-800 transition-all shadow-md cursor-pointer";
+                btnText.innerText = "มีผลต่างยอด (กดบันทึกปรับปรุงปิดงวด)";
+                vDisp.innerText = `${variance > 0 ? '+' : ''}${formatMoney(variance)} ฿`;
+                vBox.className = "flex justify-between items-center p-3 rounded-xl text-sm font-bold bg-rose-50 text-rose-700 border border-rose-200";
+                overrideBox.classList.remove('hidden');
+                
+                if (variance > 0) {
+                    vMsg.innerHTML = `⚠️ เงินเกินสมุดบัญชีมา <span class="font-extrabold">+${formatMoney(variance)}</span> บาท`;
+                } else {
+                    vMsg.innerHTML = `⚠️ เงินในเซฟขาดบัญชีไป <span class="font-extrabold">${formatMoney(variance)}</span> บาท`;
+                }
+            }
+        }
+
+        // Execute week rollover (Ending balances carry forward to new Opening balances)
+        function executeRollover() {
+            let liveCashIn = 0;
+            let liveOnlineIn = 0;
+            const fundTotals = { tithe: 0, rent: 0, memorial: 0, mission: 0, special: 0, land: 0, party: 0 };
+            state.donationRows.forEach(row => {
+                const total = (row.tithe || 0) + (row.rent || 0) + (row.memorial || 0) + (row.mission || 0) + (row.special || 0) + (row.land || 0) + (row.party || 0);
+                if (row.method === 'cash') liveCashIn += total; else liveOnlineIn += total;
+                Object.keys(fundTotals).forEach(key => { fundTotals[key] += row[key] || 0; });
+            });
+
+            let totalExp = 0;
+            state.expenseLogs.forEach(e => totalExp += e.amount);
+
+            // Handle override reason if any mismatch occurred
+            const reason = document.getElementById('reconciliation-override-reason').value.trim();
+
+            // Record log snapshot
+            const weeklyLog = {
+                week: state.weekIndex,
+                dateClosed: new Date().toLocaleDateString('th-TH', { year: '2-digit', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                openCash: state.openingCash,
+                openOnline: state.openingBank,
+                incomeCash: liveCashIn,
+                incomeOnline: liveOnlineIn,
+                expenses: totalExp,
+                closeCash: state.cash,
+                closeOnline: state.bank,
+                overrideReason: reason || "ตรงกัน",
+                note: state.weeklyNote || "",
+                ...fundTotals
+            };
+
+            state.history.unshift(weeklyLog);
+            fireWebhookNotification("WEEK_CLOSED", weeklyLog);
+
+            // Carry over Closing to new Opening
+            state.weekIndex++;
+            state.openingCash = state.cash;
+            state.openingBank = state.bank;
+
+            // Reset weekly activity rows & expenses
+            state.donationRows = [];
+            state.expenseLogs = [];
+            state.weeklyNote = "";
+            const noteBox = document.getElementById('weekly-note');
+            if (noteBox) noteBox.value = "";
+
+            // Clear physical money counters inputs
+            ['1000', '500', '100', '50', '20', 'coin10', 'coin5', 'coin2', 'coin1', 'coinSub'].forEach(id => {
+                document.getElementById('c-' + id).value = "";
+            });
+            document.getElementById('reconciliation-override-reason').value = "";
+
+            save();
+            initializeSpreadsheet();
+            renderExpenseLogs();
+            renderHistoryLogs();
+            calculateLiveTotals();
+
+            showCustomAlert("ระบบปิดรอบบัญชีสำเร็จ! ยอดคงเหลือถูกผลักยกไปเป็นยอดเริ่มสัปดาห์ใหม่เรียบร้อย", "bg-emerald-600");
+            switchTab('dashboard');
+        }
+
+        // Render Weekly closed snapshot cards
+        function renderHistoryLogs() {
+            const list = document.getElementById('history-list');
+            if (state.history.length === 0) {
+                list.innerHTML = `
+                    <div class="p-8 text-center text-slate-400 text-sm">
+                        <i data-lucide="folder-open" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+                        ยังไม่มีประวัติการสรุปยอดบัญชี
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = "";
+            state.history.forEach(log => {
+                const div = document.createElement('div');
+                div.className = "p-5 hover:bg-slate-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4";
+                div.innerHTML = `
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-slate-800 text-sm">รอบสรุปสัปดาห์ที่ ${log.week}</span>
+                            <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-medium border border-indigo-100">${log.dateClosed}</span>
+                            ${log.overrideReason !== "ตรงกัน" ? `<span class="text-[9px] bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded font-bold border border-amber-200">ปรับปรุง: ${log.overrideReason}</span>` : ''}
+                        </div>
+                        <div class="text-xs text-slate-400 flex flex-wrap gap-x-4">
+                            <span>ยอดยกมา: <strong>${formatMoney(log.openCash + log.openOnline)} ฿</strong></span>
+                            <span>รายรับเงินสด/โอน: <strong class="text-emerald-600">+${formatMoney(log.incomeCash + log.incomeOnline)} ฿</strong></span>
+                            <span>รายจ่ายเบิกสัปดาห์นี้: <strong class="text-rose-600">-${formatMoney(log.expenses)} ฿</strong></span>
+                        </div>
+                        ${log.note ? `<div class="text-xs text-slate-500 flex items-start gap-1 mt-1"><i data-lucide="notebook-pen" class="w-3 h-3 mt-0.5 text-amber-500 shrink-0"></i> <span>${log.note}</span></div>` : ''}
+                    </div>
+                    <div class="text-left md:text-right shrink-0">
+                        <span class="text-[10px] text-slate-400 block font-medium">ยอดคงเหลือยกไปสัปดาห์ถัดไป</span>
+                        <span class="text-base font-extrabold text-slate-800">${formatMoney(log.closeCash + log.closeOnline)} <span class="text-xs text-slate-500 font-normal">฿</span></span>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        // Load configurations into input fields
+        function loadSettingsToUI() {
+            document.getElementById('setting-webhook-url').value = state.webhookUrl || "";
+            document.getElementById('setting-init-bank').value = state.openingBank;
+            document.getElementById('setting-init-cash').value = state.openingCash;
+            document.getElementById('setting-church-name').value = state.churchName || "";
+            document.getElementById('setting-church-website').value = state.churchWebsite || "";
+        }
+
+        // Save system configuration parameters
+        function saveSettings() {
+            const url = document.getElementById('setting-webhook-url').value.trim();
+            const initBank = parseFloat(document.getElementById('setting-init-bank').value) || 0;
+            const initCash = parseFloat(document.getElementById('setting-init-cash').value) || 0;
+            const churchName = document.getElementById('setting-church-name').value.trim();
+            const churchWebsite = document.getElementById('setting-church-website').value.trim();
+
+            state.webhookUrl = url;
+            state.openingBank = initBank;
+            state.openingCash = initCash;
+            state.churchName = churchName;
+            state.churchWebsite = churchWebsite;
+
+            save();
+            updateChurchWebsiteButton();
+            showCustomAlert("บันทึกการตั้งค่า Webhook เรียบร้อยแล้ว!", "bg-indigo-600");
+            switchTab('dashboard');
+        }
+
+        // Show/hide the quick "ไปเว็บ/เพจคริสตจักร" button in the header
+        function updateChurchWebsiteButton() {
+            const btn = document.getElementById('btn-go-church-site');
+            if (state.churchWebsite) {
+                btn.classList.remove('hidden');
+                btn.classList.add('inline-flex');
+            } else {
+                btn.classList.add('hidden');
+                btn.classList.remove('inline-flex');
+            }
+        }
+
+        function goToChurchWebsite() {
+            if (state.churchWebsite) {
+                window.open(state.churchWebsite, '_blank');
+            }
+        }
+
+        // Save the free-text weekly note (debounced by the textarea's onchange)
+        function saveWeeklyNote(value) {
+            state.weeklyNote = value;
+            save();
+        }
+
+        // Export system as JSON backup
+        function exportSystemJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `church_ledger_v2_backup_week_${state.weekIndex}.json`);
+            dlAnchorElem.click();
+        }
+
+        // Import system data backup
+        function importSystemJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.weekIndex && 'openingCash' in parsed) {
+                        state = parsed;
+                        save();
+                        showCustomAlert("คืนค่าข้อมูลสมุดบัญชีเสร็จเรียบร้อย!", "bg-emerald-600");
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showCustomAlert("รูปแบบไฟล์โครงสร้างข้อมูลไม่ถูกต้อง!", "bg-rose-600");
+                    }
+                } catch (err) {
+                    showCustomAlert("ไม่สามารถประมวลผลไฟล์ได้!", "bg-rose-600");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Reset database
+        function resetSystemData() {
+            const confirmed = window.confirm("คุณแน่ใจหรือไม่ที่จะล้างประวัติข้อมูลทั้งหมดในระบบนี้? (ข้อมูลทั้งหมดจะไม่สามารถย้อนคืนได้)");
+            if (confirmed) {
+                localStorage.removeItem('churchWeeklyApp_v20');
+                window.location.reload();
+            }
+        }
+
+        // Export current weekly spreadsheet data to CSV
+        function exportSpreadsheetCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // Include BOM for proper Thai characters in Excel
+            csvContent += "ลำดับ,ชื่อผู้ถวาย,สิบลด,ค่าเช่า,อนุสรณ์,พันธกิจ,ถวายพิเศษ,ที่ดิน,ปาร์ตี้,ช่องทางเงิน\n";
+
+            state.donationRows.forEach((row, idx) => {
+                const line = [
+                    idx + 1,
+                    `"${row.name}"`,
+                    row.tithe || 0,
+                    row.rent || 0,
+                    row.memorial || 0,
+                    row.mission || 0,
+                    row.special || 0,
+                    row.land || 0,
+                    row.party || 0,
+                    row.method === 'cash' ? "เงินสด" : "โอนผ่านธนาคาร"
+                ].join(",");
+                csvContent += line + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `weekly_income_report_week_${state.weekIndex}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Export history snapshots to CSV
+        function exportHistoryCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += "รอบสัปดาห์ที่,วันที่ปิดบัญชี,ยอดยกมาเงินสด,ยอดยกมาเงินโอน,รายรับเงินสด,รายรับเงินโอน,รายจ่ายสัปดาห์นี้,ยอดคงเหลือเงินสด,ยอดคงเหลือเงินโอน,หมายเหตุ\n";
+
+            state.history.forEach(log => {
+                const line = [
+                    log.week,
+                    `"${log.dateClosed}"`,
+                    log.openCash,
+                    log.openOnline,
+                    log.incomeCash,
+                    log.incomeOnline,
+                    log.expenses,
+                    log.closeCash,
+                    log.closeOnline,
+                    `"${log.overrideReason}"`
+                ].join(",");
+                csvContent += line + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `church_ledger_historical_report.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Render verification inbox (real queued receipts, no AI)
+        function renderAiInbox() {
+            const list = document.getElementById('ai-pending-list');
+            const pendingItems = state.aiInbox.filter(item => item.status === "PENDING");
+            
+            document.getElementById('inbox-count').innerText = `${pendingItems.length} รายการ`;
+
+            if (pendingItems.length === 0) {
+                list.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-center text-slate-400 py-12">
+                        <div class="p-4 bg-slate-100 rounded-full text-slate-300 mb-3">
+                            <i data-lucide="file-text" class="w-10 h-10"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-600">กล่องคิวรอยืนยันว่างเปล่า</p>
+                        <p class="text-[10px] text-slate-400 mt-1 max-w-[280px]">แนบใบเสร็จและกรอกข้อมูลทางด้านซ้าย แล้วรายการจะมาปรากฏที่นี่เพื่อรอตรวจสอบ</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            list.innerHTML = "";
+            pendingItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "inbox-card bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden space-y-3 hover:shadow-md transition-all";
+                card.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        ${item.fileData ? `<img src="${item.fileData}" class="w-16 h-16 object-cover rounded-lg border border-slate-200 shrink-0" />` : `<div class="w-16 h-16 flex items-center justify-center rounded-lg border border-dashed border-slate-200 text-slate-300 shrink-0"><i data-lucide="image-off" class="w-6 h-6"></i></div>`}
+                        <div class="flex items-center gap-2 text-[10px] text-slate-400 font-semibold flex-wrap">
+                            <span class="bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded">${item.type}</span>
+                            <span>${item.fileName || 'ไม่มีไฟล์แนบ'}</span>
+                            <span class="text-slate-300">•</span>
+                            <span>${item.date}</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs pt-1 border-t border-slate-100">
+                        <div>
+                            <span class="text-[10px] text-slate-400 block">ผู้เบิกเงิน</span>
+                            <input type="text" value="${item.requester}" onchange="updateInboxField('${item.id}', 'requester', this.value)" class="font-semibold text-slate-700 bg-slate-50 px-1 py-0.5 rounded border border-transparent focus:border-indigo-300 outline-none w-full">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400 block">วัตถุประสงค์ (จ่ายเพื่อ)</span>
+                            <input type="text" value="${item.purpose}" onchange="updateInboxField('${item.id}', 'purpose', this.value)" class="font-semibold text-slate-700 bg-slate-50 px-1 py-0.5 rounded border border-transparent focus:border-indigo-300 outline-none w-full">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400 block">ยอดจ่ายจริง</span>
+                            <input type="number" value="${item.amount}" onchange="updateInboxField('${item.id}', 'amount', this.value)" class="font-bold text-indigo-600 bg-slate-50 px-1 py-0.5 rounded border border-transparent focus:border-indigo-300 outline-none w-full">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400 block">ช่องทางจ่าย</span>
+                            <select onchange="updateInboxField('${item.id}', 'method', this.value)" class="font-medium text-slate-600 bg-slate-50 px-1 py-0.5 rounded border border-transparent focus:border-indigo-300 outline-none w-full text-xs">
+                                <option value="cash" ${item.method === 'cash' ? 'selected' : ''}>💵 เงินสดในกล่อง</option>
+                                <option value="bank" ${item.method === 'bank' ? 'selected' : ''}>📱 โอนบัญชี</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <button onclick="approveAiItem('${item.id}')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-2 rounded-lg text-xs transition-colors flex items-center justify-center gap-1">
+                            <i data-lucide="check" class="w-3.5 h-3.5"></i> ตรวจสอบแล้ว & บันทึกบัญชี
+                        </button>
+                        <button onclick="rejectAiItem('${item.id}')" class="bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-500 font-semibold py-2 px-3 rounded-lg text-xs transition-colors flex items-center justify-center gap-1">
+                            ปฏิเสธ
+                        </button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        // Inline inbox editor
+        function updateInboxField(id, field, value) {
+            const item = state.aiInbox.find(i => i.id === id);
+            if (item) {
+                if (field === 'amount') {
+                    item[field] = parseFloat(value) || 0;
+                } else {
+                    item[field] = value;
+                }
+                save();
+            }
+        }
+
+        // Approve: writes the item into the real expense ledger
+        function approveAiItem(id) {
+            const item = state.aiInbox.find(i => i.id === id);
+            if (item) {
+                item.status = "APPROVED";
+
+                // Add to active expenses logs (this is the real, counted transaction)
+                executeAddExpense(item.requester, item.payee, item.purpose, item.amount, item.method, item.date);
+
+                // Notify configured webhook, if any (silently skipped if not set)
+                fireWebhookNotification("EXPENSE_APPROVED", item);
+
+                save();
+                renderAiInbox();
+            }
+        }
+
+        function rejectAiItem(id) {
+            const item = state.aiInbox.find(i => i.id === id);
+            if (item) {
+                item.status = "REJECTED";
+                save();
+                renderAiInbox();
+                showCustomAlert("ลบรายการออกจากคิวตรวจสอบเรียบร้อย", "bg-slate-600");
+            }
+        }
+
+        // On document load
+        window.onload = function() {
+            lucide.createIcons();
+            initializeSpreadsheet();
+            renderExpenseLogs();
+            renderHistoryLogs();
+            renderAiInbox();
+            calculateLiveTotals();
+            const noteBox = document.getElementById('weekly-note');
+            if (noteBox) noteBox.value = state.weeklyNote || "";
+            updateChurchWebsiteButton();
+        };
+    </script>
+</body>
+</html>

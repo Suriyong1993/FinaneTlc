@@ -1,0 +1,117 @@
+/* Hallmark · macrostructure: Application Shell · genre: editorial · theme: Garden
+ * tone: soft · anchor hue: 45 (warm amber) · paper band: light · display style: geometric-sans
+ * pre-emit critique: P5 H5 E5 S5 R5 V4
+ * ─────────────────────────────────────────────────────────
+ * Garden theme — warm, organic, calm.  Built for church finance.
+ * Paper: warm oat cream  ·  Accent: burnt amber  ·  Type: Inter + Sarabun
+ * Duration scale: 1.2×  ·  Motion: gentle, springs welcome
+ * ───────────────────────────────────────────────────────── */
+
+:root {
+  /* ═══ Palette — OKLCH, tinted toward warm anchor (hue ~80) ═══ */
+
+  /* Paper layers — warm cream, never pure white */
+  --color-paper:      oklch(97.5% 0.010 80);
+  --color-paper-2:    oklch(95% 0.012 80);
+  --color-paper-3:    oklch(91% 0.014 78);
+
+  /* Rules & borders */
+  --color-rule:       oklch(87% 0.012 80);
+  --color-rule-2:     oklch(80% 0.010 78);
+
+  /* Ink layers — warm dark, never pure black */
+  --color-ink:        oklch(18% 0.015 60);
+  --color-ink-2:      oklch(40% 0.012 70);
+  --color-muted:      oklch(48% 0.012 72);
+
+  /* Accent — burnt amber (preserved from existing palette) */
+  --color-accent:     oklch(58% 0.175 45);
+  --color-accent-2:   oklch(48% 0.17 42);
+  --color-accent-ink: oklch(98% 0.005 80);  /* white ink for accent fills */
+  --color-accent-bg:  oklch(95% 0.025 70);
+  --color-accent-bdr: oklch(85% 0.10 70);
+
+  /* Focus ring */
+  --color-focus:      oklch(58% 0.19 50);
+
+  /* Semantic */
+  --color-positive:        oklch(48% 0.15 160);   /* green */
+  --color-positive-bg:     oklch(95% 0.03 155);
+  --color-positive-bdr:    oklch(82% 0.08 155);
+  --color-negative:        oklch(42% 0.16 25);    /* red */
+  --color-negative-2:      oklch(35% 0.16 25);    /* deeper red — hover */
+  --color-negative-bg:     oklch(95% 0.02 25);
+  --color-negative-bdr:    oklch(82% 0.06 25);
+  --color-info:            oklch(42% 0.12 265);   /* blue */
+  --color-info-bg:         oklch(95% 0.02 260);
+  --color-info-bdr:        oklch(82% 0.06 260);
+  --color-purple:          oklch(42% 0.14 300);
+  --color-purple-bg:       oklch(95% 0.03 300);
+  --color-purple-bdr:      oklch(82% 0.07 300);
+
+  /* ═══ Sidebar (dark surface) ═══ */
+  --color-sidebar-bg:        oklch(16% 0.012 60);
+  --color-sidebar-border:    oklch(22% 0.010 60);
+  --color-sidebar-text:      oklch(82% 0.010 75);
+  --color-sidebar-text-2:    oklch(56% 0.008 70);
+  --color-sidebar-active-bg: oklch(22% 0.012 60);
+  --color-sidebar-active-text: oklch(82% 0.14 80);  /* warm gold highlight */
+  --color-sidebar-hover-bg:  oklch(20% 0.010 60);
+
+  /* ═══ Typography ═══ */
+  --font-sans:  "Inter", "Sarabun", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:  "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  /* Outlier — reserved for hero-number stat displays only */
+  --font-outlier: var(--font-sans);
+
+  /* Type scale — major third (1.25) */
+  --text-xs:    0.75rem;   /* 12px */
+  --text-sm:    0.8125rem; /* 13px */
+  --text-base:  1rem;      /* 16px */
+  --text-lg:    1.25rem;   /* 20px */
+  --text-xl:    1.563rem;  /* 25px */
+  --text-2xl:   1.953rem;  /* 31px */
+  --text-3xl:   2.441rem;  /* 39px */
+  --text-display-s: clamp(2rem, 3.5vw, 2.8rem);
+  --text-display:   clamp(2.2rem, 5vw, 3.6rem);
+
+  /* ═══ Spacing — 4pt scale ═══ */
+  --space-3xs: 0.125rem; /*  2px */
+  --space-2xs: 0.25rem;  /*  4px */
+  --space-xs:  0.5rem;   /*  8px */
+  --space-sm:  0.75rem;  /* 12px */
+  --space-md:  1rem;     /* 16px */
+  --space-lg:  1.5rem;   /* 24px */
+  --space-xl:  2.5rem;   /* 40px */
+  --space-2xl: 4rem;     /* 64px */
+  --space-3xl: 6rem;     /* 96px */
+
+  /* ═══ Radius ═══ */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  /* ═══ Shadows ═══ */
+  --shadow-sm: 0 1px 3px oklch(20% 0.01 60 / 0.06), 0 1px 2px oklch(20% 0.01 60 / 0.04);
+  --shadow-md: 0 4px 12px oklch(20% 0.01 60 / 0.08), 0 2px 4px oklch(20% 0.01 60 / 0.04);
+
+  /* ═══ Easings ═══ */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ═══ Durations (Garden: 1.2× scale) ═══ */
+  --dur-micro:  144ms;  /* button press, toggle, color shift */
+  --dur-short:  264ms;  /* hover lift, tooltip, menu */
+  --dur-long:   504ms;  /* modal, drawer, page reveal */
+
+  /* ═══ Z-index scale ═══ */
+  --z-base:     1;
+  --z-raised:   10;
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-modal:    400;
+  --z-toast:    500;
+  --z-tooltip:  600;
+}
